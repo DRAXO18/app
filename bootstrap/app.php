@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->web(prepend: [
+        \App\Http\Middleware\EncryptCookies::class, // ✅ reemplaza el cifrado por el tuyo
+    ]);
 
         $middleware->api(append: [
             \App\Http\Middleware\JWTFromCookie::class, // Extrae el token desde cookie

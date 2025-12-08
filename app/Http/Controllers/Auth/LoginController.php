@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Cookie;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
 {
-    // LOGIN NORMAL
+    // ✅ LOGIN NORMAL → GUARDA JWT EN COOKIE httpOnly
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
@@ -22,26 +21,44 @@ class LoginController extends Controller
             ], 401);
         }
 
+        // ✅ Crear cookie httpOnly con el JWT
+        $cookie = Cookie::make(
+            'token',        // nombre
+            $token,         // valor (JWT)
+            60 * 24 * 7,    // 7 días
+            '/',            // path
+            null,           // domain
+            false,          // secure (true en HTTPS)
+            true,           // ✅ httpOnly
+            false,
+            'Strict'
+        );
+
         return response()->json([
             'message' => 'Usuario logueado exitosamente',
-            'token'   => $token,
-            'user'    => Auth::user(),
-        ]);
+            'user'    => Auth::user()
+        ])->withCookie($cookie);
     }
 
-    // LOGOUT JWT PURO
+    // ✅ LOGOUT → INVALIDA JWT + BORRA COOKIE
     public function logout()
     {
         JWTAuth::invalidate(JWTAuth::getToken());
 
+        $cookie = Cookie::forget('token');
+
         return response()->json([
             'message' => 'Sesión cerrada'
-        ]);
+        ])->withCookie($cookie);
     }
 
-    // PERFIL DEL USUARIO
-    public function me()
+    // ✅ PERFIL DEL USUARIO (PROTEGIDO)
+    public function me(Request $request)
     {
+        logger('🍪 Cookie recibida en /api/me', [
+        'cookie_token' => $request->cookie('token'),
+        'auth_header'  => $request->header('Authorization'),
+    ]);
         return response()->json(Auth::user());
     }
 }

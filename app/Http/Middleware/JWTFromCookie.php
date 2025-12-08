@@ -15,14 +15,13 @@ class JWTFromCookie
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle($request, Closure $next)
-{
-    $token = $request->cookie('token');
+    {
+        $token = $request->cookie('token');
 
-    if ($token) {
-        $request->headers->set('Authorization', 'Bearer ' . $token);
+        if ($token) {
+            $request->headers->set('Authorization', 'Bearer ' . $token);
+        }
+
+        return $next($request);
     }
-
-    return $next($request);
-}
-
 }
