@@ -13,21 +13,42 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+
             $table->string('name');
 
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('email')
+                ->unique()
+                ->index(); 
 
-            // ✅ JWT normal (para login clásico)
-            $table->string('password')->nullable();
+            $table->string('password');
 
-            // ✅ CAMPOS PARA GOOGLE
-            $table->string('google_id')->nullable()->unique();
+            $table->string('phone')
+                ->nullable()
+                ->index();
+
+            $table->timestamp('email_verified_at')
+                ->nullable()
+                ->index(); 
+
+            $table->enum('status', ['active', 'suspended', 'deleted'])
+                ->default('active')
+                ->index(); 
+
+            $table->string('google_id')
+                ->nullable()
+                ->unique()
+                ->index(); 
+
             $table->string('avatar')->nullable();
 
             $table->rememberToken();
+
+            // ✅ FECHAS TAMBIÉN SE FILTRAN MUCHO
             $table->timestamps();
+            $table->index('created_at');
         });
+
+
 
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
