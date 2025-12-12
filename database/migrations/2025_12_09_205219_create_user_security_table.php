@@ -19,41 +19,29 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->unique(); // 1 a 1 real con users
 
-            // ===========================
-            // 🔐 FUERZA BRUTA Y BLOQUEOS
-            // ===========================
+            // FUERZA BRUTA Y BLOQUEOS
             $table->unsignedTinyInteger('failed_attempts')->default(0);
             $table->timestamp('locked_until')->nullable();
 
-            // ===========================
-            // 🧾 AUDITORÍA DE ACCESOS
-            // ===========================
+            // AUDITORÍA DE ACCESOS
             $table->timestamp('last_login_at')->nullable();
             $table->ipAddress('last_ip')->nullable();
             $table->string('last_user_agent')->nullable();
 
-            // ===========================
-            // 🚨 MONITOREO DE ATAQUES
-            // ===========================
+            // MONITOREO DE ATAQUES
             $table->timestamp('last_failed_at')->nullable();
             $table->ipAddress('last_failed_ip')->nullable();
 
-            // ===========================
-            // 🧬 SEGURIDAD DE SESIÓN
-            // ===========================
+            // SEGURIDAD DE SESIÓN
             $table->string('last_token_id')->nullable();
             // para invalidar sesiones antiguas si quieres
 
-            // ===========================
-            // ⚠️ CONTROL DE DISPOSITIVOS
-            // ===========================
+            // CONTROL DE DISPOSITIVOS
             $table->string('device_fingerprint')->nullable();
 
             $table->timestamps();
 
-            // ===========================
-            // ✅ ÍNDICES CRÍTICOS
-            // ===========================
+            // ÍNDICES CRÍTICOS
             $table->index('failed_attempts');
             $table->index('locked_until');
             $table->index('last_login_at');
