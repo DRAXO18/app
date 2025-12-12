@@ -97,7 +97,7 @@ class GoogleLoginController extends Controller
 
             logger('🚀 Redirigiendo a dashboard...');
 
-            return redirect('http://localhost:5173/dashboard')
+            return redirect('http://localhost:5173/client/dashboard')
                 ->withCookie($cookie);
         } catch (\Throwable $e) {
             logger('ERROR en Google Login', [
