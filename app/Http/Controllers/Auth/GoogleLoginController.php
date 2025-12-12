@@ -21,7 +21,7 @@ class GoogleLoginController extends Controller
         try {
             logger('✅ Entrando a handleGoogleCallback');
 
-            $googleUser = Socialite::driver('google')->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
             logger('✅ Usuario recibido desde Google', [
                 'id'     => $googleUser->getId(),
