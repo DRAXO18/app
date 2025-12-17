@@ -81,10 +81,10 @@ class GoogleLoginController extends Controller
             $cookie = cookie(
                 'token',
                 $token,
-                60 * 24 * 7,
+                60,
                 '/',
                 null,
-                false,
+                true,
                 true,
                 false,
                 'Lax'

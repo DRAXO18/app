@@ -8,6 +8,11 @@ use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Spatie\Permission\Traits\HasRoles;
 
+use App\Models\Client;
+use App\Models\CompanyUser;
+use App\Models\Technician;
+use App\Models\RubroUser;
+
 class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, Notifiable;
@@ -67,5 +72,33 @@ class User extends Authenticatable implements JWTSubject
     public function identifications()
     {
         return $this->hasMany(UserIdentification::class);
+    }
+
+     /* ===========================
+     | RELACIONES DE PANELES
+     =========================== */
+
+    // Panel Cliente
+    public function client()
+    {
+        return $this->hasOne(Client::class);
+    }
+
+    // Panel Empresa (admins)
+    public function companyUsers()
+    {
+        return $this->hasMany(CompanyUser::class);
+    }
+
+    // Panel Empresa (técnicos)
+    public function technicians()
+    {
+        return $this->hasMany(Technician::class);
+    }
+
+    // Panel Rubro (admins del sistema)
+    public function rubroUser()
+    {
+        return $this->hasOne(RubroUser::class);
     }
 }

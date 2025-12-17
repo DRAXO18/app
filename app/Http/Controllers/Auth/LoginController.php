@@ -61,10 +61,47 @@ class LoginController extends Controller
     // PERFIL DEL USUARIO (PROTEGIDO)
     public function me(Request $request)
     {
-        logger('🍪 Cookie recibida en /api/me', [
-            'cookie_token' => $request->cookie('token'),
-            'auth_header'  => $request->header('Authorization'),
+        $user = Auth::user() ?? $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ], 401);
+        }
+
+        // 🧠 Inferencia de paneles (NO persistente)
+        $panels = [];
+
+        // Panel CLIENTE
+        if (method_exists($user, 'client') && $user->client()->exists()) {
+            $panels[] = 'client';
+        }
+
+        // Panel EMPRESA (admin o técnico)
+        if (
+            (method_exists($user, 'companyUsers') && $user->companyUsers()->exists()) ||
+            (method_exists($user, 'technicians') && $user->technicians()->exists())
+        ) {
+            $panels[] = 'company';
+        }
+
+        // Panel RUBRO
+        if (method_exists($user, 'rubroUser') && $user->rubroUser()->exists()) {
+            $panels[] = 'rubro';
+        }
+
+        // 🧭 Panel activo por defecto
+        $activePanel = $panels[0] ?? null;
+
+        return response()->json([
+            'user' => [
+                'id'     => $user->id,
+                'name'   => $user->name,
+                'email'  => $user->email,
+                'avatar' => $user->avatar,
+            ],
+            'panels' => $panels,
+            'active_panel' => $activePanel,
         ]);
-        return response()->json(Auth::user());
     }
 }

@@ -20,14 +20,7 @@ return new class extends Migration
                 ->cascadeOnDelete()
                 ->unique();  // 1 user = 1 client
 
-            // Estado del cliente dentro de la app
-            $table->enum('status', ['active', 'inactive', 'banned'])
-                ->default('active');
-
             $table->timestamps();
-
-            // Índices
-            $table->index('status');
         });
     }
 

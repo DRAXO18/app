@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->string('email')
                 ->unique()
-                ->index(); 
+                ->index();
 
             $table->string('password');
 
@@ -28,16 +28,17 @@ return new class extends Migration
 
             $table->timestamp('email_verified_at')
                 ->nullable()
-                ->index(); 
+                ->index();
 
-            $table->enum('status', ['active', 'suspended', 'deleted'])
-                ->default('active')
-                ->index(); 
+            $table->tinyInteger('status')
+                ->default(1)
+                ->index()
+                ->comment('0=inactive,1=active,2=suspended,3=banned,4=deleted');
 
             $table->string('google_id')
                 ->nullable()
                 ->unique()
-                ->index(); 
+                ->index();
 
             $table->string('avatar')->nullable();
 

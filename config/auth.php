@@ -40,6 +40,16 @@ return [
             'driver' => 'jwt',
             'provider' => 'users',
         ],
+        
+        'rubro' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
+
+        'company' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
     ],
 
     /*
