@@ -104,4 +104,13 @@ class LoginController extends Controller
             'active_panel' => $activePanel,
         ]);
     }
+
+    public function test()
+{
+    return response()->json([
+        'success' => true,
+        'message' => 'El usuario tiene acceso al panel COMPANY',
+    ]);
+}
+
 }
