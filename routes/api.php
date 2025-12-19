@@ -20,6 +20,8 @@ Route::prefix('rubro')
 
         Route::post('/roles/create', [RoleAndPermissionController::class, 'createRoles']);
         Route::post('/permissions/create', [RoleAndPermissionController::class, 'createPermissions']);
+        Route::get('/roles', [RoleAndPermissionController::class, 'getRolesRubro']);
+        Route::get('/permissions', [RoleAndPermissionController::class, 'getPermissionsRubro']);
         Route::post('/roles/assign-permissions', [RoleAndPermissionController::class, 'assignPermissionsToRole']);
         Route::post('/roles/assign-user', [RoleAndPermissionController::class, 'assignRoleToUser']);
     });

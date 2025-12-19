@@ -134,4 +134,29 @@ class RoleAndPermissionController extends Controller
             'guard'   => $role->guard_name,
         ]);
     }
+
+
+    public function getRolesRubro()
+    {
+        $roles = Role::where('guard_name', 'rubro')
+            ->orderBy('name')
+            ->get(['id', 'name', 'guard_name']);
+
+        return response()->json([
+            'guard' => 'rubro',
+            'roles' => $roles,
+        ]);
+    }
+
+    public function getPermissionsRubro()
+    {
+        $permissions = Permission::where('guard_name', 'rubro')
+            ->orderBy('name')
+            ->get(['id', 'name', 'guard_name']);
+
+        return response()->json([
+            'guard'       => 'rubro',
+            'permissions' => $permissions,
+        ]);
+    }
 }
