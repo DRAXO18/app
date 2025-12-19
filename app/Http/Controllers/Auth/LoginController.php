@@ -106,11 +106,10 @@ class LoginController extends Controller
     }
 
     public function test()
-{
-    return response()->json([
-        'success' => true,
-        'message' => 'El usuario tiene acceso al panel COMPANY',
-    ]);
-}
-
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'El usuario tiene acceso al panel COMPANY',
+        ]);
+    }
 }

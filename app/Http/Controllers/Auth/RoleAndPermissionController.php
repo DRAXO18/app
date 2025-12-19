@@ -4,100 +4,125 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 class RoleAndPermissionController extends Controller
 {
     /**
-     * Crear roles admin por guard
+     * Crear un rol dinámico
      */
-    public function createRoles()
+    public function createRoles(Request $request)
     {
-        $roles = [];
+        $data = $request->validate([
+            'name'       => 'required|string|max:50',
+            'guard_name' => 'required|string|max:50',
+        ]);
 
-        foreach (['rubro', 'company'] as $guard) {
-            $roles[] = Role::firstOrCreate(
-                [
-                    'name' => 'admin',
-                    'guard_name' => $guard,
-                ]
-            );
-        }
+        $role = Role::firstOrCreate($data);
 
         return response()->json([
-            'message' => 'Roles admin creados correctamente',
-            'roles' => $roles,
-        ]);
+            'message' => 'Rol creado correctamente',
+            'role'    => $role,
+        ], 201);
     }
 
     /**
-     * Crear permisos por guard
+     * Crear permisos dinámicos (uno o varios)
      */
-    public function createPermissions()
+    public function createPermissions(Request $request)
     {
-        $permissions = [];
+        $data = $request->validate([
+            'permissions'          => 'required|array|min:1',
+            'permissions.*.name'   => 'required|string|max:100',
+            'permissions.*.guard'  => 'required|string|max:50',
+        ]);
 
-        $guards = ['rubro', 'company'];
-        $basePermissions = ['view.dashboard', 'view.users'];
+        $created = [];
 
-        foreach ($guards as $guard) {
-            foreach ($basePermissions as $perm) {
-                $permissions[] = Permission::firstOrCreate(
-                    [
-                        'name' => $perm,
-                        'guard_name' => $guard,
-                    ]
-                );
-            }
+        foreach ($data['permissions'] as $perm) {
+            $created[] = Permission::firstOrCreate([
+                'name'       => $perm['name'],
+                'guard_name' => $perm['guard'],
+            ]);
         }
 
         return response()->json([
-            'message' => 'Permisos creados correctamente',
-            'permissions' => $permissions,
-        ]);
+            'message'     => 'Permisos creados correctamente',
+            'permissions' => $created,
+        ], 201);
     }
 
     /**
-     * Asignar permisos al rol admin (por guard)
+     * Asignar permisos a un rol (por guard)
      */
     public function assignPermissionsToRole(Request $request)
     {
-        $request->validate([
-            'guard' => 'required|in:rubro,company',
+        // 0️⃣ Validación de entrada (primera muralla)
+        $data = $request->validate([
+            'role_name'   => 'required|string',
+            'guard_name'  => 'required|string',
+            'permissions' => 'required|array|min:1',
+            'permissions.*' => 'string',
         ]);
 
-        $role = Role::where('name', 'admin')
-            ->where('guard_name', $request->guard)
-            ->firstOrFail();
+        return DB::transaction(function () use ($data, $request) {
 
-        $permissions = Permission::where('guard_name', $request->guard)->get();
+            // 1️⃣ Obtener el rol correcto (nombre + guard)
+            $role = Role::where('name', $data['role_name'])
+                ->where('guard_name', $data['guard_name'])
+                ->lockForUpdate() // 🔒 evita race conditions
+                ->firstOrFail();
 
-        $role->syncPermissions($permissions);
+            // 2️⃣ Obtener SOLO permisos del mismo guard
+            $permissions = Permission::whereIn('name', $data['permissions'])
+                ->where('guard_name', $data['guard_name'])
+                ->get();
 
-        return response()->json([
-            'message' => 'Permisos asignados al rol correctamente',
-            'role' => $role->name,
-            'guard' => $role->guard_name,
-            'permissions' => $permissions->pluck('name'),
-        ]);
+            $user = Auth::user() ?? $request->user();
+
+            // 3️⃣ Validación anti-hack (la muralla real)
+            if ($permissions->count() !== count($data['permissions'])) {
+
+                logger('🚨 Intento de asignación inválida de permisos', [
+                    'auth_user_id' => $user?->id,
+                    'role'         => $role->name,
+                    'guard'        => $role->guard_name,
+                    'requested'    => $data['permissions'],
+                ]);
+
+                abort(403, 'Permisos inválidos para este rol');
+            }
+
+            $role->givePermissionTo($permissions);
+
+            return response()->json([
+                'message'     => 'Permisos asignados correctamente',
+                'role'        => $role->name,
+                'guard'       => $role->guard_name,
+                'permissions' => $permissions->pluck('name'),
+            ]);
+        });
     }
 
     /**
-     * Asignar rol admin a un usuario (por guard)
+     * Asignar rol a un usuario (por guard)
      */
     public function assignRoleToUser(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'guard'   => 'required|in:rubro,company',
+        $data = $request->validate([
+            'user_id'    => 'required|exists:users,id',
+            'role_name'  => 'required|string',
+            'guard_name' => 'required|string',
         ]);
 
-        $user = User::findOrFail($request->user_id);
+        $user = User::findOrFail($data['user_id']);
 
-        $role = Role::where('name', 'admin')
-            ->where('guard_name', $request->guard)
+        $role = Role::where('name', $data['role_name'])
+            ->where('guard_name', $data['guard_name'])
             ->firstOrFail();
 
         $user->assignRole($role);
@@ -105,8 +130,8 @@ class RoleAndPermissionController extends Controller
         return response()->json([
             'message' => 'Rol asignado al usuario correctamente',
             'user_id' => $user->id,
-            'role' => $role->name,
-            'guard' => $role->guard_name,
+            'role'    => $role->name,
+            'guard'   => $role->guard_name,
         ]);
     }
 }
