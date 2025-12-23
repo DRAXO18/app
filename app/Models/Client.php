@@ -13,7 +13,8 @@ class Client extends Model
 
     protected $fillable = [
         'user_id',
-        'status',
+        'created_at'
+
     ];
 
     // RELACIÓN: Un cliente pertenece a un usuario

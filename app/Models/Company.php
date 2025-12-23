@@ -15,6 +15,9 @@ class Company extends Model
         'phone',
         'email',
         'status',
+        'approval_status',
+        'approved_at',
+        'suspended_at',
     ];
 
     protected $casts = [
@@ -36,6 +39,12 @@ class Company extends Model
     {
         return $this->hasMany(CompanyUser::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(CompanyReview::class);
+    }
+
 
     // Roles internos que esta empresa define
     public function roles()
